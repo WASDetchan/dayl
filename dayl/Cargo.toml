@@ -4,5 +4,13 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+# shader = {path = "../shader"}
 wknup = {path = "../../wknup"}
+tokio = { version = "1", features = ["full"] }
+strum = { version = "0.27", features = ["derive"] }
+thiserror = "2.0"
+
+[build-dependencies]
+spirv-builder = {git = "https://github.com/Rust-GPU/rust-gpu.git"}
+
 
