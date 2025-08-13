@@ -213,6 +213,7 @@ dependencies = [
 name = "dayl"
 version = "0.1.0"
 dependencies = [
+ "ash",
  "spirv-builder",
  "strum",
  "thiserror",

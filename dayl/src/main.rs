@@ -1,3 +1,5 @@
+mod vulkan;
+
 use std::error::Error;
 use std::sync::Arc;
 
@@ -18,17 +20,20 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 #[tokio::main]
 async fn start(window: &WindowManager) -> Result<(), Box<dyn Error>> {
+    let entry = vulkan::init_entry();
+    let instance = vulkan::init_instance(window, Arc::clone(&entry));
+    let surface = vulkan::init_surface(window, Arc::clone(&instance));
+    let device = vulkan::init_device(Arc::clone(&instance), Arc::clone(&surface));
+    let swapchain_manager =
+        vulkan::init_swapchain_manager(Arc::clone(&surface), Arc::clone(&device));
     // println!(env!("shader.spv"));
-    let vulkan = Arc::new(wknup::vk::VulkanBuilder::new(window).build()?);
-    let device = vulkan.get_device();
-    let swapchain_manager = vulkan.get_swapchain_manager();
     let swapchain = Arc::new(swapchain_manager.create_swapchain()?);
 
     let shader = Arc::new(ShaderModule::new(Arc::clone(&device), &SHADER));
     let vertex_info = ShaderStageInfo::new(shader.clone(), ShaderStage::Vertex, "main_vs".into());
     let fragment_info =
         ShaderStageInfo::new(shader.clone(), ShaderStage::Fragment, "main_fs".into());
-    let pipeline = GraphicsPipelineBuilder::new(vulkan, swapchain)
+    let pipeline = GraphicsPipelineBuilder::new(Arc::clone(&device), swapchain)
         .add_stage("vertex".into(), vertex_info)
         .add_stage("fragment".into(), fragment_info)
         .build()?;

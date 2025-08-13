@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 # shader = {path = "../shader"}
+ash = "0.38"
 wknup = {path = "../../wknup"}
 tokio = { version = "1", features = ["full"] }
 strum = { version = "0.27", features = ["derive"] }
