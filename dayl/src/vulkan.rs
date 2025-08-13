@@ -3,10 +3,13 @@ use ash::{Entry, vk};
 use std::sync::Arc;
 
 use wknup::{
-    vk::device::{Device, DeviceBuilder},
-    vk::instance::{Instance, InstanceBuilder},
-    vk::surface::SurfaceManager,
-    vk::swapchain::SwapchainManager,
+    vk::{
+        device::{Device, DeviceBuilder},
+        instance::{Instance, InstanceBuilder},
+        selectors::DrawQueueFamilySelector,
+        surface::SurfaceManager,
+        swapchain::SwapchainManager,
+    },
     window::WindowManager,
 };
 
@@ -34,12 +37,16 @@ pub fn init_surface(window: &WindowManager, instance: Arc<Instance>) -> Arc<Surf
             .unwrap_or_else(|e| panic!("Could not init vulkan surface: {}", e)),
     )
 }
-pub fn init_device(instance: Arc<Instance>, surface: Arc<SurfaceManager>) -> Arc<Device> {
-    Arc::new(
-        DeviceBuilder::new(instance, surface)
-            .build()
-            .unwrap_or_else(|e| panic!("Could not init vulkan logical device: {}", e)),
-    )
+pub fn init_device(
+    instance: Arc<Instance>,
+    surface: Arc<SurfaceManager>,
+    selector: &mut DrawQueueFamilySelector,
+) -> Arc<Device> {
+    let (device, selector_2) = DeviceBuilder::new(instance, surface, selector.clone())
+        .build()
+        .unwrap_or_else(|e| panic!("Could not init vulkan logical device: {}", e));
+    *selector = selector_2;
+    Arc::new(device)
 }
 pub fn init_swapchain_manager(
     surface: Arc<SurfaceManager>,
