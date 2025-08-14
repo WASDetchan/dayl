@@ -1,11 +1,15 @@
+mod shutdown;
 mod vulkan;
 
 use std::error::Error;
 use std::sync::Arc;
 
+use ash::khr::swapchain;
 use wknup::vk::command_pool::CommandPool;
 use wknup::vk::device::fill_selector;
+use wknup::vk::fence::Fence;
 use wknup::vk::pipeline::GraphicsPipelineBuilder;
+use wknup::vk::semaphore::Semaphore;
 use wknup::{
     vk::selectors::DrawQueueFamilySelector,
     vk::shader::{ShaderModule, ShaderStage, ShaderStageInfo},
@@ -23,6 +27,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 #[tokio::main]
 async fn start(window: &WindowManager) -> Result<(), Box<dyn Error>> {
+    let shutdown_sender = shutdown::register_fence_shutdown();
+
     let entry = vulkan::init_entry();
     let instance = vulkan::init_instance(window, Arc::clone(&entry));
     let surface = vulkan::init_surface(window, Arc::clone(&instance));
@@ -48,5 +54,15 @@ async fn start(window: &WindowManager) -> Result<(), Box<dyn Error>> {
     let command_pool = CommandPool::new(Arc::clone(&device), selector.graphics.clone().unwrap())?;
 
     let queues = fill_selector(Arc::clone(&device), selector.clone());
+
+    let image_available = Semaphore::new(Arc::clone(&device));
+    let render_finished = Semaphore::new(Arc::clone(&device));
+
+    let in_flight = Fence::new(Arc::clone(&device));
+
+    loop {
+        let (index, _) = swapchain.acquire_next_image(Some(&image_available), None);
+        let commanad_buffer = pipeline.create_command_buffer(&command_pool, index);
+    }
     Ok(())
 }
